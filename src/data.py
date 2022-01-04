@@ -36,10 +36,12 @@ class KeelData():
     all_rows = al[line_start+1:]
     
     final_matrix = np.zeros(shape=(0, self.number_of_attributes), dtype='O')
-    
+    rows = []
     for item in all_rows:
       row = np.array(item.replace(" ", "").split(',')).astype('O')
-      final_matrix = np.vstack([row, final_matrix])
+      rows.append(row)
+
+    final_matrix = np.vstack([rows, final_matrix])
 
     return final_matrix
     
@@ -85,7 +87,7 @@ class KeelData():
     
     train_mat = shuffled_matrix[:n_of_train_lines, :]
     
-    test_mat = shuffled_matrix[n_of_train_lines:, :n_of_col-1]
+    test_mat = shuffled_matrix[n_of_train_lines:, :n_of_col-1]    
     
     answer = shuffled_matrix[n_of_train_lines:, n_of_col-1]
         

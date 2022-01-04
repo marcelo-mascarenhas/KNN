@@ -1,7 +1,6 @@
 import numpy as np
 import statistics
-
-from numpy.core.numeric import count_nonzero
+import math
 
 class Kdtree():
   
@@ -10,8 +9,13 @@ class Kdtree():
     Inner class that builds the foundation to the construction of the KD-tree
     """
     def __init__(self, mv = None):
-      self.median_value = mv if mv is not None else None      
+      
+      self.median_value = mv if mv is not None else None
+      
+      self.accessible_points = 0      
+      
       self.right_node = None
+      
       self.left_node = None
   
   def __init__(self, data_matrix):
@@ -25,9 +29,8 @@ class Kdtree():
     started_dimension = 0
     
     self.kdtree = self.__buildKDTree(new_matrix, started_dimension)
-    
-    print(self.kdtree)
-            
+                
+                
   def __buildKDTreeRec(self, data_matrix, started_dimension, recursion=False):
     
     if len(data_matrix) == 0 and not recursion:
@@ -62,25 +65,28 @@ class Kdtree():
     while True:
       current_node, data_matrix, started_dimension = new_stack.pop()
       
+      current_node.accessible_points = len(data_matrix)
+      
       median, lm, rm = self.__medianAndMatrices(data_matrix, started_dimension)
       
       started_dimension = self.__checkDimensions(started_dimension+1)
       
       current_node.median_value = median
       
-      if len(lm) <= 1 or self.__checkInfinite(lm):
+      if len(lm) <= 1:
         current_node.left = lm
       else:
         current_node.left = self.Node()
+
+                
         new_stack.append((current_node.left,lm, started_dimension))
         
-        
-      if len(rm) <= 1 or self.__checkInfinite(rm):
+      if len(rm) <= 1:
         current_node.right = rm
       else:
         current_node.right = self.Node()
         new_stack.append((current_node.right, rm, started_dimension))     
-      
+
       if len(new_stack) == 0:
         break
       
@@ -90,50 +96,31 @@ class Kdtree():
     
     att_median = statistics.median(data_matrix[:, dim].astype('float32'))
 
-    condition = data_matrix[:, dim].astype('float32') < att_median
-    
-    left_mat, right_mat = self.__splitMatrix(data_matrix, condition)
+    left_mat, right_mat = self.__halfMatrix(data_matrix, dim)
     
     return att_median, left_mat, right_mat
   
   def __checkDimensions(self, curr_dimension):
     return curr_dimension % self.dimension_num
-  
-  def __splitMatrix(self, matrix, cond):
-    return matrix[cond], matrix[~cond]
-  
-  def __checkInfinite(self, data_matrix):
+
+  def __halfMatrix(self, data_matrix, dim):
     """
-    Check the cases when all vectors stay on the same side and the tree construction never stops. 
-    If it occurs, then put all vectors in one leaf.
-    
-    For instance, the case:
-    [['5.1' '3.5' '1.4' '0.2' ]
-      ['5.1' '3.5' '1.4' '0.3']
-      ['5.5' '4.2' '1.4' '0.2']]
-      
-    When you take the median of any dimension and filter by <, it always stay on the same side of the tree, and the algorithm runs forever.
-    If you alter to <= or => or >, it happens with another set of vectors.
-    
+    If the array is ordened, the median is, by definition, right at the middle, so is necessary just
+    to split the vectors.
     """
+    data_matrix = data_matrix[np.argsort(data_matrix[:, dim])]
+    size_mat = math.ceil(len(data_matrix)/2)
     
-    for dim in range(self.dimension_num):
-      
-      att_median = statistics.median(data_matrix[:, dim].astype('float32'))
-      
-      condition = data_matrix[:, dim].astype('float32') < att_median      
-      
-      if not np.all(condition == False):
-        return False
+    lm = data_matrix[:size_mat, :]
+    rm = data_matrix[size_mat:, :]
     
-    return True
+    return lm, rm
       
   def __treatDuplicates(self, data_matrix):
     """
-    Concatenate the same points and add a weight column.
-    
+    Concatenate the same points and 
+    add a weight column.
     """
-    
     
     unique_rows, count = np.unique(data_matrix.astype('<U30'), return_counts=True, axis=0)  
     

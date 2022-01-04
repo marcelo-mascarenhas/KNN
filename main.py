@@ -1,9 +1,7 @@
-import sys
 import argparse
-import src.knn
+from src.knn import Knn
 from src.data import KeelData
-from src.kdtree import Kdtree
-import numpy as np
+
 
 def parser():
   """
@@ -14,25 +12,33 @@ def parser():
   to use the implemented KNN.")
   
   parser.add_argument("-inf", "--input_file", help="Path to the dataset file.", required=True)
+  parser.add_argument("--k", help="Number of nearest neighbours for K-NN.", required=True)
 
   argument = parser.parse_args()
   
   file = argument.input_file
+  k = argument.k
 
-  return file
+  k = int(k)
+
+
+  return file, k
 
 def main():  
 
-  file = parser()
-  
+  file, number_of_neighbours = parser()
+    
   file_handler = open(file, 'r')
   
   dataset = KeelData(file_handler)
   
   train_data, test_points, test_answer = dataset.trainTestSplit()
   
-  tree = Kdtree(train_data)
+  tree = Knn(train_data)
   
+  prediction = tree.classify(test_points, k=number_of_neighbours)
+  
+  print(prediction)
 
 if __name__ == "__main__":
   main()
