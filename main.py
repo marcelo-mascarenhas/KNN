@@ -21,7 +21,6 @@ def parser():
 
   k = int(k)
 
-
   return file, k
 
 def main():  
@@ -38,7 +37,11 @@ def main():
   
   prediction = tree.classify(test_points, k=number_of_neighbours)
   
-  print(prediction)
-
+  prec, recall, acc = tree.getMetrics(prediction, test_answer)
+  
+  print(prec, recall, acc)
+  
+  
+  
 if __name__ == "__main__":
   main()

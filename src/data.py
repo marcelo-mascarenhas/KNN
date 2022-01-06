@@ -90,7 +90,9 @@ class KeelData():
     test_mat = shuffled_matrix[n_of_train_lines:, :n_of_col-1]    
     
     answer = shuffled_matrix[n_of_train_lines:, n_of_col-1]
-        
+    
+    answer = np.array([answer]).T  
+    
     return train_mat, test_mat, answer
     
 if __name__ == "__main__":

@@ -12,11 +12,13 @@ class Kdtree():
       
       self.median_value = mv if mv is not None else None
       
-      self.accessible_points = 0      
+      self.accessible_points = 0
       
-      self.right_node = None
+      self.dimension = 0
       
-      self.left_node = None
+      self.right = None
+      
+      self.left = None
   
   def __init__(self, data_matrix):
     
@@ -31,26 +33,26 @@ class Kdtree():
     self.kdtree = self.__buildKDTree(new_matrix, started_dimension)
                 
                 
-  def __buildKDTreeRec(self, data_matrix, started_dimension, recursion=False):
+  # def __buildKDTreeRec(self, data_matrix, started_dimension, recursion=False):
     
-    if len(data_matrix) == 0 and not recursion:
-      raise ValueError('Empty dataset was sent to the KDTree constructor')
+  #   if len(data_matrix) == 0 and not recursion:
+  #     raise ValueError('Empty dataset was sent to the KDTree constructor')
     
-    elif len(data_matrix) <= 1 and recursion:
-      return data_matrix
+  #   elif len(data_matrix) <= 1 and recursion:
+  #     return data_matrix
 
-    median, left_matrix, right_matrix = self.__medianAndMatrices(data_matrix, started_dimension)
+  #   median, left_matrix, right_matrix = self.__medianAndMatrices(data_matrix, started_dimension)
         
-    head_node = self.Node(median)    
+  #   head_node = self.Node(median)    
     
-    head_node.left_node = self.__buildKDTree(left_matrix, \
-      self.__checkDimensions(started_dimension+1),  recursion=True)
+  #   head_node.lef = self.__buildKDTreeRec(left_matrix, \
+  #     self.__checkDimensions(started_dimension+1),  recursion=True)
     
-    head_node.right_node = self.__buildKDTree(right_matrix, \
-      self.__checkDimensions(started_dimension+1), recursion=True)
+  #   head_node.right = self.__buildKDTreeRec(right_matrix, \
+  #     self.__checkDimensions(started_dimension+1), recursion=True)
     
     
-    return head_node
+  #   return head_node
     
   
   def __buildKDTree(self, data_matrix, started_dimension):
@@ -68,6 +70,8 @@ class Kdtree():
       current_node.accessible_points = len(data_matrix)
       
       median, lm, rm = self.__medianAndMatrices(data_matrix, started_dimension)
+      
+      current_node.dimension = started_dimension
       
       started_dimension = self.__checkDimensions(started_dimension+1)
       
@@ -105,8 +109,8 @@ class Kdtree():
 
   def __halfMatrix(self, data_matrix, dim):
     """
-    If the array is ordened, the median is, by definition, right at the middle, so is necessary just
-    to split the vectors.
+    If the array is ordened, the median is, by definition, right at the middle. So, it is sufficient just splitting
+    the matrix at half.
     """
     data_matrix = data_matrix[np.argsort(data_matrix[:, dim])]
     size_mat = math.ceil(len(data_matrix)/2)
@@ -127,7 +131,8 @@ class Kdtree():
     new_matrix = np.array(np.append(unique_rows, np.asmatrix(count).T, axis=1).astype('O'))
 
     return new_matrix
-      
+  
+  
   
 if __name__ == "__main__":
   pass
