@@ -1,4 +1,6 @@
 import argparse
+
+from numpy.lib.shape_base import split
 from src.knn import Knn
 from src.data import KeelData
 
@@ -39,7 +41,10 @@ def main():
   
   prec, recall, acc = tree.getMetrics(prediction, test_answer)
   
-  print(prec, recall, acc)
+  
+  name = file.split('.')[0].split('/')[1]
+  print(f'{name}&{round(acc,7)}&{round(prec,2)}&{round(recall,2)}&{number_of_neighbours}')
+  
   
   
   

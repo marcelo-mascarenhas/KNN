@@ -2,7 +2,8 @@ import numpy as np
 import statistics
 import math
 
-class Kdtree():
+
+class KdTree():
   
   class Node():
     """
@@ -11,11 +12,7 @@ class Kdtree():
     def __init__(self, mv = None):
       
       self.median_value = mv if mv is not None else None
-      
-      self.accessible_points = 0
-      
-      self.dimension = 0
-      
+            
       self.right = None
       
       self.left = None
@@ -29,7 +26,8 @@ class Kdtree():
     self.dimension_num = np.size(new_matrix, 1)-2
     
     started_dimension = 0
-    
+    # self.kdtree = self.__buildKDTreeRec(new_matrix, started_dimension)
+
     self.kdtree = self.__buildKDTree(new_matrix, started_dimension)
                 
                 
@@ -45,7 +43,7 @@ class Kdtree():
         
   #   head_node = self.Node(median)    
     
-  #   head_node.lef = self.__buildKDTreeRec(left_matrix, \
+  #   head_node.left = self.__buildKDTreeRec(left_matrix, \
   #     self.__checkDimensions(started_dimension+1),  recursion=True)
     
   #   head_node.right = self.__buildKDTreeRec(right_matrix, \
@@ -66,13 +64,9 @@ class Kdtree():
     
     while True:
       current_node, data_matrix, started_dimension = new_stack.pop()
-      
-      current_node.accessible_points = len(data_matrix)
-      
+            
       median, lm, rm = self.__medianAndMatrices(data_matrix, started_dimension)
-      
-      current_node.dimension = started_dimension
-      
+            
       started_dimension = self.__checkDimensions(started_dimension+1)
       
       current_node.median_value = median
@@ -81,7 +75,6 @@ class Kdtree():
         current_node.left = lm
       else:
         current_node.left = self.Node()
-
                 
         new_stack.append((current_node.left,lm, started_dimension))
         

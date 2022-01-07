@@ -1,8 +1,6 @@
-from numpy.core.defchararray import count
 from .kdtree import *
-from sortedcontainers import SortedDict
 
-class Knn(Kdtree):
+class Knn(KdTree):
   
   def __init__(self, train_points):
     
@@ -13,17 +11,10 @@ class Knn(Kdtree):
     if np.size(point, 0) != self.dimension_num:
       raise ValueError("Test point dimension does not match KDTree's.")
     
-    
-    # target_node = self.__findTargetNode(point, k)    
-    # candidate_points = list()
-    # self.__getCandidatePoints(target_node, candidate_points)
-    
-    # nearest_points = self.__getNearestPoints(point, candidate_points, k )    
-    
-    nearest = SortedDict()
+    nearest = list()
     dimension = 0
     self.__nearestNeighboursAux(point, self.kdtree, k, nearest, dimension)
-    nearest_points = list(nearest.values())
+    nearest_points = [ seq[1] for seq in nearest ]
     
     return nearest_points
   
@@ -40,78 +31,26 @@ class Knn(Kdtree):
         good_branch = node.right
         bad_branch = node.left
 
-      self.__nearestNeighboursAux(point, good_branch, k, nearest, self._Kdtree__checkDimensions(dimension+1))
+      self.__nearestNeighboursAux(point, good_branch, k, nearest, self._KdTree__checkDimensions(dimension+1))
       ## The radius is the distance between the farest point and the target point.
-      radius = nearest.keys()[-1]
+      radius = nearest[-1][0]
       
       if (median_comparator-radius) <= node.median_value <= median_comparator+radius or len(nearest) != k:
-        self.__nearestNeighboursAux(point, bad_branch, k, nearest, self._Kdtree__checkDimensions(dimension+1))
+        self.__nearestNeighboursAux(point, bad_branch, k, nearest, self._KdTree__checkDimensions(dimension+1))
     
     else:
       dist = self.distance(point, node)
       
-      if len(nearest) == k and dist < nearest.keys()[-1]: 
-        nearest.popitem(k-1)
-        nearest[dist] = node
+      if len(nearest) == k and dist < nearest[-1][0]: 
+        nearest.pop()
+        nearest.append((dist,node))
+        #Sort the list to assure that the last element of the list is the farest.
+        nearest.sort(key=lambda x: x[0])
+      
       elif len(nearest) < k:
-        nearest[dist] = node
+        nearest.append((dist, node))
+        nearest.sort(key=lambda x: x[0])
 
-
-
-      
-  
-  def __getNearestPoints(self, point, allCandidates, k):
-    
-    nearest = SortedDict()
-    final_index = k-1
-    for candidate in allCandidates:
-      
-      dist = self.distance(point, candidate)
-      
-      if len(nearest) == k and dist >= nearest.keys()[-1]:
-        continue
-      elif len(nearest) == k and dist < nearest.keys()[-1]:
-        nearest.popitem(final_index)
-        
-      nearest[dist] = candidate
-    
-    return list(nearest.values())
-        
-  def __getCandidatePoints(self, targetNode, lista):    
-    
-    if self.__isNode(targetNode):
-      self.__getCandidatePoints(targetNode.left, lista)
-      self.__getCandidatePoints(targetNode.right, lista)
-    else:
-      lista.append(targetNode)
-  
-  def __findTargetNode(self, point, k):
-    
-    target_node = self.kdtree
-    
-    dimension = 0
-
-    while True:
-            
-      median_comparator = float(point[dimension])
-      
-      candidate_node = target_node.left if median_comparator <= target_node.median_value \
-        else target_node.right
-      
-      if not self.__isNode(candidate_node):
-        if k == 1:
-          target_node = candidate_node
-        break
-      else:
-        if k <= candidate_node.accessible_points:
-          target_node = candidate_node
-          dimension = self._Kdtree__checkDimensions(dimension+1)
-        else:
-          break
-
-    
-    return target_node
-  
   def __checkLabels(self, points):
     counter_dic = dict()
     
@@ -140,11 +79,17 @@ class Knn(Kdtree):
   
 
   def classify(self, test_point, k):
-    classifications = list()
+    """
+    Classify each one of the points.
     
+    """
+    classifications = list()
+    kk = 0
     for item in test_point:
       nearest_points = self.__findKNearestNeighbours(item, k)
       classification_columns = np.concatenate(nearest_points, axis=0)[: , self.dimension_num:]
+      kk +=1
+      print(kk)
       result = self.__checkLabels(classification_columns)
       classifications.append(result)
     
@@ -153,6 +98,13 @@ class Knn(Kdtree):
     return column_prediction
   
   def getMetrics(self, predictions, answers):
+    """
+    Calculate the confusion matrix and derive the accuracy, precision and recall from it.
+    
+    
+    """
+    
+    
     unique_rows = np.unique(answers.astype('<U30'), axis=0)
     first_class = unique_rows[0]
     
@@ -167,14 +119,14 @@ class Knn(Kdtree):
         fp +=1
       elif c1 != first_class and c2 == first_class:
         fn +=1
-      else:
+      elif c1 != first_class and c2 != first_class:
         tn +=1
-        
     accuracy = (tp+tn)/(tp+tn+fp+fn)
     
     prec = tp/(tp+fp)
     recall = tp/(tp+fn)
-    
+
+        
     return accuracy, prec, recall
   
     

@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
-      "args": ["-inf", "/home/mmra/Documents/Faculdade/5º Período/Algoritmos II/Trabalhos/TP1/data/iris.dat", "--k", "5"]
+      "args": ["-inf", "/home/mmra/Documents/Faculdade/5º Período/Algoritmos II/Trabalhos/TP1/data/banana.dat", "--k", "3"]
     }
   ]
 }
