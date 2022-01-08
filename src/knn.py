@@ -84,12 +84,10 @@ class Knn(KdTree):
     
     """
     classifications = list()
-    kk = 0
     for item in test_point:
       nearest_points = self.__findKNearestNeighbours(item, k)
       classification_columns = np.concatenate(nearest_points, axis=0)[: , self.dimension_num:]
-      kk +=1
-      print(kk)
+
       result = self.__checkLabels(classification_columns)
       classifications.append(result)
     
